@@ -16,10 +16,19 @@ struct MenuBarView: View {
             // Header with primary toggle
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Image(systemSymbolName: "sun.max.fill")
-                            .foregroundColor(.orange)
-                            .imageScale(.medium)
+                    HStack(spacing: 8) {
+                        if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
+                           let iconImage = NSImage(contentsOfFile: iconPath) {
+                            Image(nsImage: iconImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 18, height: 18)
+                                .cornerRadius(3)
+                        } else {
+                            Image(systemSymbolName: "sun.max.fill")
+                                .foregroundColor(.orange)
+                                .imageScale(.medium)
+                        }
                         Text("Lumina")
                             .font(.headline)
                             .fontWeight(.semibold)
