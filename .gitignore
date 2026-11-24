@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Swift Package Manager & Xcode
+/.build/
+/Packages/
+xcuserdata/
+DerivedData/
+.swiftpm/
+
+# Built binaries & release packages
+/*.app
+/*.zip
+*.dmg
+
+# Editor artifacts
+.vscode/
+.idea/
+*.swp
+*~
