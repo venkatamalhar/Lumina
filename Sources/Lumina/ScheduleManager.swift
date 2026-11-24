@@ -43,7 +43,7 @@ final class ScheduleManager: ObservableObject {
             currentKelvin = settings.dayTemperature
             statusDescription = "Disabled"
             GammaController.shared.restoreDisplaySettings(animated: animated, duration: 0.5)
-            (NSApplication.shared.delegate as? AppDelegate)?.updateStatusIcon(isFiltering: false)
+            AppDelegate.shared?.updateStatusIcon(isFiltering: false)
             return
         }
         
@@ -76,7 +76,7 @@ final class ScheduleManager: ObservableObject {
         
         let multipliers = ColorMath.multipliers(forTemperature: currentKelvin)
         GammaController.shared.apply(multipliers: multipliers, animated: animated, duration: 0.8)
-        (NSApplication.shared.delegate as? AppDelegate)?.updateStatusIcon(isFiltering: currentKelvin < settings.dayTemperature)
+        AppDelegate.shared?.updateStatusIcon(isFiltering: currentKelvin < settings.dayTemperature)
     }
     
     private func computeSolarTemperature(now: Date, sunrise: Date, sunset: Date) -> (Double, String) {

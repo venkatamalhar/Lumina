@@ -2,11 +2,14 @@ import Cocoa
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    static private(set) var shared: AppDelegate?
+    
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var settingsWindow: NSWindow?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.shared = self
         NSApplication.shared.setActivationPolicy(.accessory)
         
         setupStatusItem()

@@ -54,7 +54,9 @@ final class LocationProvider: NSObject, CLLocationManagerDelegate, @unchecked Se
         lock.lock()
         lastCoordinate = location.coordinate
         lock.unlock()
-        onCoordinateUpdate?(location.coordinate)
+        DispatchQueue.main.async { [weak self] in
+            self?.onCoordinateUpdate?(location.coordinate)
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
