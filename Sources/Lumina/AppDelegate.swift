@@ -106,7 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func openSettingsWindow() {
         popover.performClose(nil)
         
-        if let existing = settingsWindow {
+        if let existing = settingsWindow, existing.isVisible {
             existing.makeKeyAndOrderFront(nil)
             NSApplication.shared.activate(ignoringOtherApps: true)
             return
@@ -114,7 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         let hostingController = NSHostingController(rootView: SettingsView())
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 480, height: 380),
+            contentRect: NSRect(x: 0, y: 0, width: 500, height: 420),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -123,6 +123,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.title = "Lumina Settings"
         window.isReleasedWhenClosed = false
         window.contentViewController = hostingController
+        window.contentView = hostingController.view
+        hostingController.view.autoresizingMask = [.width, .height]
+        hostingController.view.frame = NSRect(x: 0, y: 0, width: 500, height: 420)
+        window.setContentSize(NSSize(width: 500, height: 420))
         
         settingsWindow = window
         window.makeKeyAndOrderFront(nil)

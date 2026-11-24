@@ -29,12 +29,10 @@ struct SettingsView: View {
     @ObservedObject var settings = SettingsStore.shared
     @ObservedObject var scheduler = ScheduleManager.shared
     
-    @AppStorage("lumina_settings_tab") private var selectedTab: Int = 0
-    
     var body: some View {
         VStack(spacing: 0) {
             // macOS-native top segmented switcher
-            Picker("", selection: $selectedTab) {
+            Picker("", selection: $settings.selectedTab) {
                 ForEach(SettingsTab.allCases) { tab in
                     Label(tab.title, systemImage: tab.icon).tag(tab.rawValue)
                 }
@@ -42,124 +40,142 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(.horizontal, 24)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+            .padding(.top, 18)
+            .padding(.bottom, 14)
             
             Divider()
             
-            // Tab content container
-            Group {
-                switch selectedTab {
-                case 1:
-                    scheduleContent
-                case 2:
-                    calibrationContent
-                default:
-                    generalContent
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    switch settings.selectedTab {
+                    case 1:
+                        scheduleContent
+                    case 2:
+                        calibrationContent
+                    default:
+                        generalContent
+                    }
                 }
+                .padding(24)
             }
-            .padding(20)
-            
-            Spacer(minLength: 0)
         }
-        .frame(width: 480, height: 380)
+        .frame(width: 500, height: 420)
     }
     
     private var generalContent: some View {
-        Form {
-            Section {
-                Toggle("Launch Lumina at login", isOn: $settings.launchAtLogin)
-                    .disabled(!LaunchAtLoginManager.isSupported)
-                
-                LabeledContent("Global Toggle Shortcut") {
-                    Text("⌥⇧B (Option + Shift + B)")
-                        .foregroundColor(.secondary)
-                }
-            } header: {
-                Text("Startup & Controls")
-            }
-            
-            Section {
-                let displayCount = getActiveDisplayCount()
-                LabeledContent("Active Displays") {
-                    Text("\(displayCount) display\(displayCount == 1 ? "" : "s") detected")
-                        .foregroundColor(.secondary)
-                }
-                
-                Text("Lumina automatically synchronizes gamma tables across all connected monitors and handles display reconnection.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            } header: {
-                Text("Monitors")
-            }
-        }
-        .formStyle(.grouped)
-    }
-    
-    private var scheduleContent: some View {
-        Form {
-            Section {
-                Picker("Schedule Mode", selection: $settings.scheduleMode) {
-                    ForEach(ScheduleMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+        VStack(alignment: .leading, spacing: 18) {
+            GroupBox("Startup & Controls") {
+                VStack(alignment: .leading, spacing: 12) {
+                    Toggle("Launch Lumina at login", isOn: $settings.launchAtLogin)
+                        .disabled(!LaunchAtLoginManager.isSupported)
+                    
+                    Divider()
+                    
+                    HStack {
+                        Text("Global Shortcut")
+                        Spacer()
+                        Text("⌥⇧B (Option + Shift + B)")
+                            .foregroundColor(.secondary)
                     }
                 }
-                .pickerStyle(.radioGroup)
-            } header: {
-                Text("Automation")
+                .padding(10)
             }
             
-            if settings.scheduleMode == .solar {
-                Section {
-                    if let solar = scheduler.currentSolarTimes {
-                        let formatter = solarDateFormatter
-                        LabeledContent("Calculated Sunrise") {
-                            Text(formatter.string(from: solar.sunrise))
-                        }
-                        LabeledContent("Calculated Sunset") {
-                            Text(formatter.string(from: solar.sunset))
-                        }
-                    } else {
-                        Text("Solar calculation in progress...")
+            GroupBox("Monitors") {
+                VStack(alignment: .leading, spacing: 10) {
+                    let displayCount = getActiveDisplayCount()
+                    HStack {
+                        Text("Active Displays")
+                        Spacer()
+                        Text("\(displayCount) display\(displayCount == 1 ? "" : "s") detected")
                             .foregroundColor(.secondary)
                     }
                     
-                    LabeledContent("Transition Duration") {
+                    Text("Lumina automatically synchronizes gamma tables across all connected monitors and handles display reconnection.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(10)
+            }
+        }
+    }
+    
+    private var scheduleContent: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            GroupBox("Automation") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Picker("Schedule Mode", selection: $settings.scheduleMode) {
+                        ForEach(ScheduleMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.radioGroup)
+                }
+                .padding(10)
+            }
+            
+            if settings.scheduleMode == .solar {
+                GroupBox("Solar Parameters") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let solar = scheduler.currentSolarTimes {
+                            let formatter = solarDateFormatter
+                            HStack {
+                                Text("Calculated Sunrise")
+                                Spacer()
+                                Text(formatter.string(from: solar.sunrise))
+                                    .foregroundColor(.secondary)
+                            }
+                            Divider()
+                            HStack {
+                                Text("Calculated Sunset")
+                                Spacer()
+                                Text(formatter.string(from: solar.sunset))
+                                    .foregroundColor(.secondary)
+                            }
+                        } else {
+                            Text("Solar calculation in progress...")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Divider()
+                        
                         HStack {
+                            Text("Transition Duration")
+                            Spacer()
                             Slider(value: $settings.transitionDurationMinutes, in: 10...60, step: 5)
+                                .frame(width: 140)
                             Text("\(Int(settings.transitionDurationMinutes)) min")
                                 .monospacedDigit()
                                 .frame(width: 55, alignment: .trailing)
                         }
                     }
-                } header: {
-                    Text("Solar Parameters")
+                    .padding(10)
                 }
             } else if settings.scheduleMode == .custom {
-                Section {
-                    HStack {
-                        Text("Start Time")
-                        Spacer()
-                        TimePickerView(minutesFromMidnight: $settings.customStartMinutes)
+                GroupBox("Custom Window") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Start Time")
+                            Spacer()
+                            TimePickerView(minutesFromMidnight: $settings.customStartMinutes)
+                        }
+                        Divider()
+                        HStack {
+                            Text("End Time")
+                            Spacer()
+                            TimePickerView(minutesFromMidnight: $settings.customEndMinutes)
+                        }
                     }
-                    
-                    HStack {
-                        Text("End Time")
-                        Spacer()
-                        TimePickerView(minutesFromMidnight: $settings.customEndMinutes)
-                    }
-                } header: {
-                    Text("Custom Window")
+                    .padding(10)
                 }
             }
         }
-        .formStyle(.grouped)
     }
     
     private var calibrationContent: some View {
-        Form {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 18) {
+            GroupBox("Warmth Level") {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Night Temperature")
                         Spacer()
@@ -178,19 +194,16 @@ struct SettingsView: View {
                         ColorChannelBadge(channel: "B", value: mult.blue)
                     }
                 }
-            } header: {
-                Text("Warmth Level")
+                .padding(10)
             }
             
-            Section {
+            GroupBox("Color Physics") {
                 Text("Display transfer tables modulate hardware RGB lookup tables via Core Graphics (`CGSetDisplayTransferByTable`). Values are normalized relative to standard D65 6500K daylight.")
                     .font(.caption)
                     .foregroundColor(.secondary)
-            } header: {
-                Text("Color Physics")
+                    .padding(10)
             }
         }
-        .formStyle(.grouped)
     }
     
     private var solarDateFormatter: DateFormatter {

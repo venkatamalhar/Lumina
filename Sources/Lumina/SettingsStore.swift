@@ -24,6 +24,8 @@ final class SettingsStore: ObservableObject {
         static let transitionDurationMinutes = "lumina_transition_minutes"
     }
     
+    @Published var selectedTab: Int = 0
+    
     @Published var isFilterActive: Bool {
         didSet {
             defaults.set(isFilterActive, forKey: Keys.isFilterActive)
