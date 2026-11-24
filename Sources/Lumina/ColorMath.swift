@@ -21,6 +21,10 @@ enum ColorMath {
     // Calculates RGB gamma multipliers for a correlated color temperature between 1000K and 6500K.
     // Based on blackbody radiation curves normalized so 6500K produces unity multipliers (1.0, 1.0, 1.0).
     static func multipliers(forTemperature kelvin: Double) -> ColorMultipliers {
+        if kelvin >= 6500.0 {
+            return .neutral
+        }
+        
         let temp = max(1000.0, min(6500.0, kelvin)) / 100.0
         
         let red: Double

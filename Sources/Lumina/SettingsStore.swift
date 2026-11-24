@@ -25,19 +25,33 @@ final class SettingsStore: ObservableObject {
     }
     
     @Published var isFilterActive: Bool {
-        didSet { defaults.set(isFilterActive, forKey: Keys.isFilterActive) }
+        didSet {
+            defaults.set(isFilterActive, forKey: Keys.isFilterActive)
+            ScheduleManager.shared.evaluateSchedule(animated: true)
+        }
     }
     
     @Published var nightTemperature: Double {
-        didSet { defaults.set(nightTemperature, forKey: Keys.nightTemperature) }
+        didSet {
+            defaults.set(nightTemperature, forKey: Keys.nightTemperature)
+            if isFilterActive {
+                ScheduleManager.shared.evaluateSchedule(animated: false)
+            }
+        }
     }
     
     @Published var dayTemperature: Double {
-        didSet { defaults.set(dayTemperature, forKey: Keys.dayTemperature) }
+        didSet {
+            defaults.set(dayTemperature, forKey: Keys.dayTemperature)
+            ScheduleManager.shared.evaluateSchedule(animated: true)
+        }
     }
     
     @Published var scheduleMode: ScheduleMode {
-        didSet { defaults.set(scheduleMode.rawValue, forKey: Keys.scheduleMode) }
+        didSet {
+            defaults.set(scheduleMode.rawValue, forKey: Keys.scheduleMode)
+            ScheduleManager.shared.evaluateSchedule(animated: true)
+        }
     }
     
     @Published var customStartMinutes: Int {

@@ -64,14 +64,51 @@ final class GammaController: @unchecked Sendable {
         lock.unlock()
     }
     
-    func restoreDisplaySettings(animated: Bool = true) {
-        apply(multipliers: .neutral, animated: animated)
-        if !animated {
+    func restoreDisplaySettings(animated: Bool = true, duration: TimeInterval = 0.5) {
+        lock.lock()
+        transitionTimer?.invalidate()
+        transitionTimer = nil
+        
+        let start = currentMultipliers
+        let target = ColorMultipliers.neutral
+        
+        guard animated && duration > 0 else {
+            currentMultipliers = target
             CGDisplayRestoreColorSyncSettings()
-            lock.lock()
             baselineTables.removeAll()
             lock.unlock()
+            return
         }
+        
+        let startTime = Date()
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            let elapsed = Date().timeIntervalSince(startTime)
+            let rawProgress = Float(elapsed / duration)
+            let progress = min(1.0, rawProgress)
+            let smoothed = progress * progress * (3.0 - 2.0 * progress)
+            
+            self.lock.lock()
+            self.currentMultipliers = start.interpolated(to: target, progress: smoothed)
+            self.applyCurrentMultipliersToAllDisplays()
+            
+            if progress >= 1.0 {
+                timer.invalidate()
+                self.transitionTimer = nil
+                CGDisplayRestoreColorSyncSettings()
+                self.baselineTables.removeAll()
+                self.currentMultipliers = .neutral
+            }
+            self.lock.unlock()
+        }
+        
+        RunLoop.main.add(timer, forMode: .common)
+        transitionTimer = timer
+        lock.unlock()
     }
     
     private func activeDisplayIDs() -> [CGDirectDisplayID] {
@@ -92,6 +129,9 @@ final class GammaController: @unchecked Sendable {
         if let cached = baselineTables[displayID] {
             return cached
         }
+        
+        // Ensure display is in clean native state before sampling baseline calibration.
+        CGDisplayRestoreColorSyncSettings()
         
         var sampleCount: UInt32 = 0
         var red = [CGGammaValue](repeating: 0, count: Int(tableCapacity))

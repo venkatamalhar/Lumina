@@ -13,7 +13,6 @@ final class ScheduleManager: ObservableObject {
     private let settings = SettingsStore.shared
     
     private init() {
-        observeSettings()
         startPeriodicCheck()
     }
     
@@ -27,18 +26,6 @@ final class ScheduleManager: ObservableObject {
     
     func toggleFilter() {
         settings.isFilterActive.toggle()
-        evaluateSchedule()
-    }
-    
-    private func observeSettings() {
-        settings.objectWillChange
-            .receive(on: RunLoop.main)
-            .sink { [weak self] in
-                DispatchQueue.main.async {
-                    self?.evaluateSchedule()
-                }
-            }
-            .store(in: &cancellables)
     }
     
     private func startPeriodicCheck() {
@@ -54,11 +41,7 @@ final class ScheduleManager: ObservableObject {
         guard settings.isFilterActive else {
             currentKelvin = settings.dayTemperature
             statusDescription = "Disabled"
-            GammaController.shared.apply(
-                multipliers: ColorMath.multipliers(forTemperature: currentKelvin),
-                animated: animated,
-                duration: 0.6
-            )
+            GammaController.shared.restoreDisplaySettings(animated: animated, duration: 0.5)
             return
         }
         
