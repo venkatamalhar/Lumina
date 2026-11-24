@@ -1,6 +1,20 @@
-# Lumina
+<p align="center">
+  <img src="Resources/AppIcon.png" width="128" height="128" alt="Lumina Logo" />
+</p>
 
-Lumina is a lightweight macOS menu bar utility that adjusts display color temperature to filter blue light across all connected monitors. Built with Swift and SwiftUI using public Core Graphics display transfer APIs.
+<h1 align="center">Lumina</h1>
+
+<p align="center">
+  A lightweight macOS menu bar utility that adjusts display color temperature to filter blue light across all connected monitors. Built with Swift and SwiftUI using public Core Graphics display transfer APIs.
+</p>
+
+<p align="center">
+  <a href="https://github.com/venkatamalhar/Lumina/releases/latest"><img src="https://img.shields.io/github/v/release/venkatamalhar/Lumina?color=orange&label=Release" alt="Latest Release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <img src="https://img.shields.io/badge/Platform-macOS%2013%2B-lightgrey.svg" alt="Platform: macOS 13+" />
+</p>
+
+---
 
 ## Highlights
 
@@ -15,6 +29,14 @@ Lumina is a lightweight macOS menu bar utility that adjusts display color temper
 
 - macOS 13.0 (Ventura) or later
 - Apple Silicon or Intel Mac
+
+## Download & Installation
+
+Download the latest pre-built application bundle directly from [Releases](https://github.com/venkatamalhar/Lumina/releases/latest):
+
+1. Download **`Lumina.zip`**.
+2. Unzip and drag `Lumina.app` to your `/Applications` folder.
+3. Launch Lumina. The app will run in your menu bar.
 
 ## Building from Source
 
