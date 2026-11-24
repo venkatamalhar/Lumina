@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import AppKit
 
 final class ScheduleManager: ObservableObject {
     static let shared = ScheduleManager()
@@ -42,6 +43,7 @@ final class ScheduleManager: ObservableObject {
             currentKelvin = settings.dayTemperature
             statusDescription = "Disabled"
             GammaController.shared.restoreDisplaySettings(animated: animated, duration: 0.5)
+            (NSApplication.shared.delegate as? AppDelegate)?.updateStatusIcon(isFiltering: false)
             return
         }
         
@@ -74,6 +76,7 @@ final class ScheduleManager: ObservableObject {
         
         let multipliers = ColorMath.multipliers(forTemperature: currentKelvin)
         GammaController.shared.apply(multipliers: multipliers, animated: animated, duration: 0.8)
+        (NSApplication.shared.delegate as? AppDelegate)?.updateStatusIcon(isFiltering: currentKelvin < settings.dayTemperature)
     }
     
     private func computeSolarTemperature(now: Date, sunrise: Date, sunset: Date) -> (Double, String) {
@@ -100,9 +103,12 @@ final class ScheduleManager: ObservableObject {
             return (temp, "Transitioning to day mode")
         }
         
-        // Night duration spans after sunset until next sunrise
-        let isNight = now > sunset || now < sunrise
-        if isNight {
+        if now > sunset {
+            let coords = LocationProvider.shared.currentCoordinates()
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+            let nextSunrise = SolarCalculator.calculate(for: tomorrow, latitude: coords.latitude, longitude: coords.longitude)?.sunrise ?? sunrise
+            return (nightTemp, "Active until sunrise (\(formatter.string(from: nextSunrise)))")
+        } else if now < sunrise {
             return (nightTemp, "Active until sunrise (\(formatter.string(from: sunrise)))")
         } else {
             return (dayTemp, "Daylight active until sunset (\(formatter.string(from: sunset)))")

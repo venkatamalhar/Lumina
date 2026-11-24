@@ -12,13 +12,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
         setupPopover()
         setupHotKey()
+        setupWakeObservers()
         
         ScheduleManager.shared.start()
     }
     
     func applicationWillTerminate(_ notification: Notification) {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
         HotKeyManager.shared.unregister()
         GammaController.shared.restoreDisplaySettings(animated: false)
+    }
+    
+    private func setupWakeObservers() {
+        let center = NSWorkspace.shared.notificationCenter
+        center.addObserver(
+            self,
+            selector: #selector(handleDisplayWake),
+            name: NSWorkspace.screensDidWakeNotification,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(handleDisplayWake),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func handleDisplayWake() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            ScheduleManager.shared.evaluateSchedule(animated: false)
+        }
+    }
+    
+    func updateStatusIcon(isFiltering: Bool) {
+        guard let button = statusItem?.button else { return }
+        let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .regular)
+        let symbolName = isFiltering ? "sun.max.fill" : "sun.max"
+        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Lumina")?
+            .withSymbolConfiguration(config)
     }
     
     private func setupStatusItem() {

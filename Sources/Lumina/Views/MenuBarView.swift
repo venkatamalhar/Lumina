@@ -32,6 +32,7 @@ struct MenuBarView: View {
                 Spacer(minLength: 12)
                 Toggle("", isOn: $settings.isFilterActive)
                     .toggleStyle(.switch)
+                    .tint(.orange)
                     .labelsHidden()
             }
             

@@ -55,15 +55,28 @@ final class SettingsStore: ObservableObject {
     }
     
     @Published var customStartMinutes: Int {
-        didSet { defaults.set(customStartMinutes, forKey: Keys.customStartMinutes) }
+        didSet {
+            defaults.set(customStartMinutes, forKey: Keys.customStartMinutes)
+            if scheduleMode == .custom {
+                ScheduleManager.shared.evaluateSchedule(animated: true)
+            }
+        }
     }
     
     @Published var customEndMinutes: Int {
-        didSet { defaults.set(customEndMinutes, forKey: Keys.customEndMinutes) }
+        didSet {
+            defaults.set(customEndMinutes, forKey: Keys.customEndMinutes)
+            if scheduleMode == .custom {
+                ScheduleManager.shared.evaluateSchedule(animated: true)
+            }
+        }
     }
     
     @Published var transitionDurationMinutes: Double {
-        didSet { defaults.set(transitionDurationMinutes, forKey: Keys.transitionDurationMinutes) }
+        didSet {
+            defaults.set(transitionDurationMinutes, forKey: Keys.transitionDurationMinutes)
+            ScheduleManager.shared.evaluateSchedule(animated: true)
+        }
     }
     
     @Published var launchAtLogin: Bool {
